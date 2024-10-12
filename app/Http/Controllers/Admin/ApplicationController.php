@@ -89,7 +89,7 @@ class ApplicationController extends Controller
 
     public function update($id, Request $request)
     {
-        $this->applicationUpdate->update($id, $request->except('_token',));
+        $this->applicationUpdate->update($id, $request->except('_token'));
         return redirect()->route('admin.applications.edit', [$id])->with('message', 'Заявка обновлена');
 
     }
