@@ -3,107 +3,65 @@
 namespace App\Http\Controllers\Manager;
 
 use App\Http\Controllers\Controller;
-use App\Models\Application;
-use App\Models\Client;
-use App\Models\Topic;
-use App\Models\User;
+use App\Models\Ticket;
+use App\Models\Message;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
-class ClientController extends Controller
+class TicketController extends Controller
 {
     public function index(Request $request)
     {
-
-        $clients = Client::query();
-        $filter = [
-            'search' => $request->search,
-            'sort' => $request->sort,
-        ];
-
-        if (!empty($request->search)) {
-            $search = '%' . strtolower(trim($request->search)) . '%';
-            $clients->where(function ($query) use ($search) {
-                $query->where('full_name', 'like', $search)->orWhere('email', 'like', $search)->orWhere('phone','like',$search);
-            });
-        }
-
-
-        if (!empty($request->sort)) {
-            if ($request->sort == 'yes') {
-                $clients->orderBy('created_at');
-            } elseif ($request->sort == 'no') {
-                $clients->orderBy('id', 'desc');
-            }
-        }
-
-        $clients = $clients->orderBy('id', 'desc')->paginate();
-
-        return view('manager.clients.index', compact('clients', 'filter'));
-    }
-
-    public function create()
-    {
-        $clients = Client::all();
-        return view('manager.clients.create', compact('clients'));
+        $tickets = Ticket::withCount('messages')->withCount('unreadMessages')
+            ->where('user_id', Auth::id())->having('messages_count','>',1)->get();
+        return view('manager.tickets.index', compact('tickets'));
     }
 
     public function store(Request $request)
     {
-        Client::create(
+        $ticket = Ticket::create(
+
             [
-                'full_name' => $request->surname . ' ' .$request->name,
-                'email' => $request->email,
-                'phone' => $request->phone,
-                'date_born' => $request->date_born,
-                'document' => $request->document,
-                'document_number' => $request->document_number,
-                'issued_by' => $request->issued_by,
-                'residential_address' => $request->issued_by,
-                'registration_address' => $request->issued_by,
-                'additional_information' => $request->issued_by,
+                'user_id' => Auth::id(),
+                'description' => $request->description,
+                'topic' => $request->topic,
+                'status' => Ticket::STATUS_NEW,
             ]
+
         );
-        return redirect()->route('manager.clients.index')->with('message', 'Пользователь успешно добавлен');
+//        $ticket->messages()->create(
+//            [
+//                'message' => $request->message,
+//                'user_id' => Auth::id(),
+//                'recipient_id' => $request->recipient_id,
+//            ]
+//        );
+        return redirect()->route('manager.tickets.index')->with('message', 'Новое обращение создано');
 
     }
 
     public function edit($id)
     {
-
-
-        $client = Client::find($id);
-        $surnameAndName =  Client::where('id', $id)->value('full_name');
-        $nameAndSurname = explode(' ',$surnameAndName);
-
-
-        if ($client) {
-            return view('manager.clients.edit', compact('client','nameAndSurname'));
-        }
-
-        return redirect()->route('manager.clients.index')->with('message', 'Клиент не найден');
+        $ticket = Ticket::find($id);
+        $messages = $ticket->messages;
+        Message::where('ticket_id', $id)->where('is_read', 0)
+            ->where('user_id', '!=', Auth::id())->update(
+                ['is_read' => 1],
+            );
+        return view('manager.tickets.edit', compact('ticket', 'messages'));
     }
 
     public function update($id, Request $request)
     {
-        Client::where('id', $id)->update(
-            [
-                'name' => $request->name,
-                'email' => $request->email,
-                'phone' => $request->phone,
-            ]
-        );
-        return redirect()->route('manager.clients.index', [$id])->with('message', 'Клиент обновлен');
+        $ticket = Ticket::find($id);
+        $ticket->messages()->create(['message' => $request->message, 'user_id' => Auth::id()]);
+        return redirect()->route('manager.tickets.edit', [$id])->with('message', 'Заявка обновлена');
 
     }
 
-    public function destroy($id)
+    public function create()
     {
-        if (Client::find($id)) {
-            Client::where('id', $id)->delete();
-            return redirect()->route('manager.clients.index')->with('message', 'Клиент удален');
-        }
-        else
-            return redirect()->route('manager.clients.index')->with('message', 'Клиент не найден');
-
+        $topics = Ticket::getTopic();
+        return view('manager.tickets.create', compact('topics'));
     }
 }

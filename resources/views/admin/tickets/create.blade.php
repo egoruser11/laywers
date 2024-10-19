@@ -14,7 +14,7 @@
                     </div>
                     <div class="card-content">
                         <div class="card-body">
-                            <form method="post" action="{{route('manager.tickets.store')}}" class="form form-horizontal"
+                            <form method="post" action="{{route('admin.tickets.store')}}" class="form form-horizontal"
                                   id="profileForm">
                                 @csrf
                                 <div class="form-body">

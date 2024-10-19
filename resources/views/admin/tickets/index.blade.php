@@ -1,4 +1,4 @@
-@extends('manager.layout.app')
+@extends('admin.layout.app')
 
 @section('title', 'Помощь')
 
@@ -8,14 +8,14 @@
     @if(session()->has('message'))
         <p class="text-success">{{session('message')}}</p>
     @endif
-    <a href="{{route('manager.tickets.create')}}" class="btn btn-outline-primary waves-effect">Новое
-        обращение</a>
+    
 
     <div class="table-responsive">
         <table class="table table-striped">
             <tr>
                 <th>ID</th>
                 <th>Кому направлено</th>
+                <th>От кого направлено</th>
                 <th>Описание</th>
                 <th></th>
             </tr>
@@ -24,9 +24,14 @@
                 <tr>
                     <td>{{$ticket->id}}</td>
                     <td>{{optional($ticket->admin)->name}}</td>
+                    <td>{{optional($ticket->user)->name}}</td>
                     <td>{{$ticket->description}}</td>
-                    <td><a href="{{route('manager.tickets.edit',$ticket->id)}}"
-                           class="btn btn-outline-dark waves-effect">Открыть чат обращения</a></td>
+                    <td>@if(!$ticket->admin_id == null)<a href="{{route('admin.tickets.edit',$ticket->id)}}"
+                           class="btn btn-outline-dark waves-effect">Открыть чат обращения</a>@else
+                            <a href="{{route('admin.tickets.get',$ticket->id)}}"
+                               class="btn btn-outline-dark waves-effect">Взять обращение</a>
+                            @endif
+                    </td>
                 </tr>
             @endforeach
             </tbody>

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Auth;
 use Laravel\Sanctum\HasApiTokens;
 
 /**
@@ -69,120 +70,65 @@ use Laravel\Sanctum\HasApiTokens;
  * @method static \Illuminate\Database\Eloquent\Builder|Application whereWorkStartDateAndTime($value)
  * @mixin \Eloquent
  */
-class Application extends Authenticatable
+class Ticket extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable,SoftDeletes;
+    use HasApiTokens, HasFactory, Notifiable;
+
+
+    protected $guarded = false;
 
     public const STATUS_NEW = 'new';
     public const STATUS_UNDER_CONSIDERATION = 'under_consideration';
     public const STATUS_IN_WORK = 'in_work';
     public const STATUS_COMPLETED = 'completed';
-    const TYPE_DEPARTURE = 'departure';
-    const TYPE_OFFICE = 'office';
 
-    protected $fillable = [
-        'start_at',
-        'status',
-        'name',
-        'phone',
-        'topic_id',
-        'client_id',
-        'manager_id',
-        'lawyer_id',
-        'government_agency',
-        'application_type',
-        'meeting_date',
-        'work_start_date_and_time',
-        'count_hours_work',
-        'price',
-        'manager_notes',
-        'description',
-    ];
-
-
-    public static function getStatuses()
+    public function user()
     {
-        return [
-            Application::STATUS_NEW => 'Новая',
-            Application::STATUS_UNDER_CONSIDERATION => 'На рассмотрении',
-            Application::STATUS_IN_WORK => 'В работе',
-            Application::STATUS_COMPLETED => 'Завершен',
-        ];
+        return $this->belongsTo(User::class, 'user_id');
     }
 
-    public static function getTypes()
+    public function admin()
     {
-        return [
-            Application::TYPE_DEPARTURE => 'выезд',
-            Application::TYPE_OFFICE => 'В офисе',
-        ];
+        return $this->belongsTo(User::class, 'admin_id');
     }
 
     public static function getTopic()
     {
         return [
-            'finance_and_bankruptcy' => 'Финансы и банкротство',
-            'property' => 'Имущество',
-            'Business_services' => 'Услуги для бизнеса',
+            'account_crashes' => 'Вылетает аккаунт',
+            'very_slow_connection' => 'Очень медленное соеденение',
+            'didn_t_pay_the_money' => 'Не выплатили деньги',
         ];
     }
 
-    public function getStatusNameAttribute()
+    public function scopeUnreadMessagesCount($query)
     {
-        return Application::getStatuses()[$this->status];
+        $query->withCount(['messages as unread_messages_count' => function ($query) {
+            $query->where('is_read', 0)->where('user_id', '!=', Auth::id());
+        }]);
     }
 
-    public function getTypeNameAttribute()
+    public function messages()
     {
-        return Application::getTypes()[$this->status];
+        return $this->hasMany(Message::class);
     }
 
-    public function getFormatStartAtAttribute()
+    public function unreadMessages()
     {
-        if (empty($this->start_at)) {
-            return ' ';
-        }
-        return Carbon::parse($this->start_at)->translatedFormat('d F y, H:i');
-    }
-    public function getEndWorkDateAttribute()
-    {
-        return Carbon::parse($this->work_start_date_and_time)->addHours($this->count_hours_work);
-    }
-    public function getDateMonthAttribute()
-    {
-        return Carbon::parse($this->work_start_date_and_time)->day;
-    }
-    public function getStartWorkDateStrAttribute()
-    {
-        return (Carbon::parse($this->work_start_date_and_time))->format('H:i');
-    }
-    public function getEndWorkDateStrAttribute()
-    {
-        return (Carbon::parse($this->work_start_date_and_time)->addHours($this->count_hours_work))->format('H:i');
+        return $this->hasMany(Message::class)->where('is_read',0)
+            ->where('user_id','!=',Auth::id());
     }
 
 
-    public function topic()
+    public static function getStatuses()
     {
-        return $this->belongsTo(Topic::class);
+        return [
+            Ticket::STATUS_NEW => 'Новая',
+            Ticket::STATUS_UNDER_CONSIDERATION => 'На рассмотрении',
+            Ticket::STATUS_IN_WORK => 'В работе',
+            Ticket::STATUS_COMPLETED => 'Завершен',
+        ];
     }
-
-    public function manager()
-    {
-        return $this->belongsTo(User::class);
-    }
-
-    public function lawyer()
-    {
-        return $this->belongsTo(User::class);
-    }
-
-    public function client()
-    {
-        return $this->belongsTo(Client::class);
-    }
-
-
 
 
 }

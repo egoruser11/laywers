@@ -103,8 +103,15 @@
                     <td>{{$application->description}}</td>
                     <td><a href="{{route('admin.applications.edit',$application->id)}}"
                            class="btn btn-outline-dark btn-sm waves-effect">Редактировать</a></td>
-                    <td><a href="{{route('admin.applications.destroy',$application->id)}}"
-                           class="btn btn-outline-dark btn-sm waves-effect">Удалить</a></td>
+                    <td> @if(!$application->trashed())
+                            <a href="{{route('admin.applications.destroy',$application->id)}}"
+                           class="btn btn-outline-dark btn-sm waves-effect">Удалить мягко</a>
+                        @else
+                            <a href="{{route('admin.applications.restore',$application->id)}}"
+                               class="btn btn-outline-dark btn-sm waves-effect">Восстановить</a>@endif
+                    </td>
+                    <td><a href="{{route('admin.applications.force-destroy',$application->id)}}"
+                           class="btn btn-outline-dark btn-sm waves-effect">Удалить полностью</a></td>
                 </tr>
             @endforeach
             </tbody>

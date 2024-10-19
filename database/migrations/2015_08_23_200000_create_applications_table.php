@@ -31,13 +31,12 @@ return new class extends Migration
             $table->integer('price')->nullable();
             $table->text('manager_notes')->nullable();
             $table->text('description')->nullable();
+            $table->softDeletes();
             $table->timestamps();
-
             $table->foreign('topic_id')->references('id')->on('topics')->onDelete('cascade');
             $table->foreign('manager_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('lawyer_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('client_id')->references('id')->on('clients')->onDelete('cascade');
-
         });
     }
 

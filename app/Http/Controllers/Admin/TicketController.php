@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Manager;
+namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Ticket;
@@ -13,8 +13,8 @@ class TicketController extends Controller
 {
     public function index(Request $request)
     {
-        $tickets = Ticket::where('user_id',Auth::id())->get();
-        return view('manager.tickets.index',compact('tickets'));
+        $tickets = Ticket::where('admin_id',Auth::id())->orWhereNull('admin_id')->get();
+        return view('admin.tickets.index',compact('tickets'));
     }
 
     public function store(Request $request)
@@ -36,7 +36,7 @@ class TicketController extends Controller
 //                'recipient_id' => $request->recipient_id,
 //            ]
 //        );
-        return redirect()->route('manager.tickets.index')->with('message', 'Новое обращение создано');
+        return redirect()->route('admin.tickets.index')->with('message', 'Новое обращение создано');
 
     }
 
@@ -48,19 +48,26 @@ class TicketController extends Controller
             ->where('user_id','!=',Auth::id())->update(
             ['is_read' => 1],
         );
-        return view('manager.tickets.edit',compact('ticket','messages'));
+        return view('admin.tickets.edit',compact('ticket','messages'));
     }
     public function update($id, Request $request)
     {
         $ticket = Ticket::find($id);
         $ticket->messages()->create(['message' => $request->message,'user_id'=>Auth::id()]);
-        return redirect()->route('manager.tickets.edit', [$id])->with('message', 'Заявка обновлена');
+        return redirect()->route('admin.tickets.edit', [$id])->with('message', 'Заявка обновлена');
 
     }
 
     public function create()
     {
         $topics = Ticket::getTopic();
-        return  view('manager.tickets.create',compact('topics'));
+        return  view('admin.tickets.create',compact('topics'));
+    }
+
+    public function get($id)
+    {
+        $ticket = Ticket::find($id);
+        $ticket->update(['admin_id' => Auth::id()]);
+        return redirect()->route('admin.tickets.index');
     }
 }

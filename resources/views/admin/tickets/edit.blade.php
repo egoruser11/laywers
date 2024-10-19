@@ -1,4 +1,4 @@
-@extends('manager.layout.app')
+@extends('admin.layout.app')
 
 @section('title', 'Обращение')
 
@@ -23,7 +23,7 @@
                 </div>
             </div>
             <p id="commentError" style="display: none;"></p>
-            <form action="{{route('manager.tickets.update',[$ticket->id])}}" method="post" class="form form-horizontal" id="profileForm">
+            <form action="{{route('admin.tickets.update',[$ticket->id])}}" method="post" class="form form-horizontal" id="profileForm">
                 @csrf
                 <fieldset class="form-label-group mb-1 mt-2">
                     <textarea id="commentDescription" name="message" class="form-control" rows="3" autocomplete="off" placeholder="Ваш комментарий"></textarea>

@@ -5,6 +5,7 @@ use App\Http\Controllers\Manager\ClientController;
 use App\Http\Controllers\Manager\CourtController;
 use App\Http\Controllers\Manager\LawyerController;
 use App\Http\Controllers\Manager\ProfileController;
+use App\Http\Controllers\Manager\TicketController;
 use App\Http\Controllers\Manager\TopicController;
 use Illuminate\Support\Facades\Route;
 
@@ -95,6 +96,21 @@ Route::group(
                         Route::post('{id}', 'update')->name('update');
                         Route::get('destroy/{id}', 'destroy')->name('destroy');
                         Route::post('{id}/update/password','updatePassword')->name('update.password');
+                    }
+                );
+            }
+        );
+        Route::group(
+            ['prefix' => 'tickets', 'as' => 'tickets.'],
+            function () {
+                Route::controller(TicketController::class)->group(
+                    function () {
+                        Route::get('/', 'index')->name('index');
+                        Route::get('create', 'create')->name('create');
+                        Route::post('/', 'store')->name('store');
+                        Route::get('{id}/edit','edit')->name('edit');
+                        Route::post('{id}', 'update')->name('update');
+                        Route::get('destroy/{id}', 'destroy')->name('destroy');
                     }
                 );
             }

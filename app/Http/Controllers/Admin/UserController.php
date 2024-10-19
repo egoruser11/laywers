@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Users\StoreRequest;
+use App\Models\Application;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -14,7 +15,7 @@ class UserController extends Controller
 
         $statuses = User::getStatusesOfAccount();
         $roles = User::getRoles();
-        $users = User::query();
+        $users = User::query()->withTrashed();
 
         $filter = [
             'search' => $request->search,
@@ -118,6 +119,24 @@ class UserController extends Controller
             return redirect()->route('admin.users.index')->with('message', 'Пользователь был удален');
         }
         return redirect()->route('admin.users.index')->with('message', 'Такой пользователь не найден');
+
+    }
+    public function forceDestroy(int $id)
+    {
+        if (User::where('id',$id)->withTrashed()->exists()) {
+            User::where('id', $id)->forceDelete();
+            return redirect()->route('admin.users.index')->with('message', 'Заявка была удалена польностью');
+        }
+        return redirect()->route('admin.users.index')->with('message', 'Такой заявки не существует');
+
+    }
+    public function restore(int $id)
+    {
+        if (User::where('id',$id)->withTrashed()->exists()) {
+            User::where('id', $id)->restore();
+            return redirect()->route('admin.users.index')->with('message', 'Заявка была восстановлена');
+        }
+        return redirect()->route('admin.users.index')->with('message', 'Такой заявки не существует');
 
     }
 

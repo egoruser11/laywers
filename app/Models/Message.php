@@ -69,21 +69,20 @@ use Laravel\Sanctum\HasApiTokens;
  * @method static \Illuminate\Database\Eloquent\Builder|Application whereWorkStartDateAndTime($value)
  * @mixin \Eloquent
  */
-class Ticket extends Authenticatable
+class Message extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
+    use HasApiTokens, HasFactory, Notifiable;
 
+    protected $guarded = false;
 
-    protected $fillable = [
-        'user_id',
-        'recipient_id',
-        'created_at',
-        'updated_at',
-    ];
-
-    public function messages()
+    public function user()
     {
-        return $this->hasMany(Message::class);
+        return $this->belongsTo(User::class,'user_id');
+    }
+
+    public function ticket()
+    {
+        return $this->belongsTo(Ticket::class);
     }
 
 

@@ -33,8 +33,8 @@ class ApplicationController extends Controller
 
     public function index(Request $request)
     {
-        $id = Auth::id();
-        $applications = Application::query()->with('manager', 'topic', 'client');
+
+        $applications = Application::query()->with('manager', 'topic', 'client')->withTrashed();
         $statuses = Application::getStatuses();
         $topics = Topic::orderBy('name')->get();
 
@@ -96,9 +96,28 @@ class ApplicationController extends Controller
 
     public function destroy($id)
     {
-        if (Application::find($id)->exists()) {
+        if (Application::where('id',$id)->exists()) {
             Application::where('id', $id)->delete();
             return redirect()->route('admin.applications.index')->with('message', 'Заявка была удалена');
+        }
+        return redirect()->route('admin.applications.index')->with('message', 'Такой заявки не существует');
+
+    }
+
+    public function forceDestroy(int $id)
+    {
+        if (Application::where('id',$id)->withTrashed()->exists()) {
+            Application::where('id', $id)->forceDelete();
+            return redirect()->route('admin.applications.index')->with('message', 'Заявка была удалена польностью');
+        }
+        return redirect()->route('admin.applications.index')->with('message', 'Такой заявки не существует');
+
+    }
+    public function restore(int $id)
+    {
+        if (Application::where('id',$id)->withTrashed()->exists()) {
+            Application::where('id', $id)->restore();
+            return redirect()->route('admin.applications.index')->with('message', 'Заявка была восстановлена');
         }
         return redirect()->route('admin.applications.index')->with('message', 'Такой заявки не существует');
 

@@ -49,8 +49,15 @@
                             <td>{{$user->format_start_at}}</td>
                             <td><a href="{{route('admin.users.edit',$user->id)}}"
                                    class="btn btn-outline-dark btn-sm waves-effect">Редактировать</a></td>
-                            <td><a href="{{route('admin.users.destroy',$user->id)}}"
-                                   class="btn btn-outline-dark btn-sm waves-effect">Удалить</a></td>
+                            <td> @if(!$user->trashed())
+                                    <a href="{{route('admin.users.destroy',$user->id)}}"
+                                       class="btn btn-outline-dark btn-sm waves-effect">Удалить мягко</a>
+                                @else
+                                    <a href="{{route('admin.users.restore',$user->id)}}"
+                                       class="btn btn-outline-dark btn-sm waves-effect">Восстановить</a>@endif
+                            </td>
+                            <td><a href="{{route('admin.users.force-destroy',$user->id)}}"
+                                   class="btn btn-outline-dark btn-sm waves-effect">Удалить полностью</a></td>
                         </tr>
                     @endforeach
                     </tbody>

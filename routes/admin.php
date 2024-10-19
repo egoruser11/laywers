@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\ApplicationController;
 use App\Http\Controllers\Admin\ClientController;
 use App\Http\Controllers\Admin\CourtController;
 use App\Http\Controllers\Admin\ProfileController;
+use App\Http\Controllers\Admin\TicketController;
 use App\Http\Controllers\Admin\TopicController;
 use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
@@ -52,6 +53,8 @@ Route::group(
                         Route::get('{id}/edit','edit')->name('edit');
                         Route::post('{id}', 'update')->name('update');
                         Route::get('destroy/{id}', 'destroy')->name('destroy');
+                        Route::get('destroy/force/{id}', 'forceDestroy')->name('force-destroy');
+                        Route::get('restore/{id}', 'restore')->name('restore');
                     }
                 );
             }
@@ -67,7 +70,10 @@ Route::group(
                         Route::get('{id}/edit','edit')->name('edit');
                         Route::post('{id}', 'update')->name('update');
                         Route::get('{id}/destroy', 'destroy')->name('destroy');
+                        Route::get('destroy/force/{id}', 'forceDestroy')->name('force-destroy');
+                        Route::get('restore/{id}', 'restore')->name('restore');
                         Route::post('{id}/update/password','updatePassword')->name('update.password');
+
                     }
                 );
             }
@@ -95,6 +101,22 @@ Route::group(
                         Route::get('/', 'index')->name('index');
                         Route::post('/update/password', 'updatePassword')->name('update.password');
                         Route::post('/', 'update')->name('update');
+                    }
+                );
+            }
+        );
+        Route::group(
+            ['prefix' => 'tickets', 'as' => 'tickets.'],
+            function () {
+                Route::controller(TicketController::class)->group(
+                    function () {
+                        Route::get('/', 'index')->name('index');
+                        Route::get('create', 'create')->name('create');
+                        Route::post('/', 'store')->name('store');
+                        Route::get('{id}/edit','edit')->name('edit');
+                        Route::post('{id}', 'update')->name('update');
+                        Route::get('destroy/{id}', 'destroy')->name('destroy');
+                        Route::get('get/{id}', 'get')->name('get');
                     }
                 );
             }

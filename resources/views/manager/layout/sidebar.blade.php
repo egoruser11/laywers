@@ -1,3 +1,4 @@
+@inject('ticketService', 'App\Services\Manager\TicketService')
 <div class="main-menu menu-fixed menu-light menu-accordion menu-shadow" data-scroll-to-active="true">
     <div class="navbar-header">
         <ul class="nav navbar-nav flex-row">
@@ -30,6 +31,13 @@
             </li>
             <li class="nav-item"><a
                     href="{{route('manager.profile.index')}}" class="if-pb-0"><i class="feather icon-list"></i><span class="menu-title">Ваш профиль</span></a>
+            </li>
+            @php
+            $unreadCount = $ticketService->getUnreadMessagesCount(auth()->id());
+            @endphp
+            <li class="nav-item"><a
+                    href="{{route('manager.tickets.index')}}" class="if-pb-0"><i class="feather icon-list"></i><span class="menu-title">Помощь
+                        @if($unreadCount)<span class="text-danger">+{{$unreadCount}}</span> @endif</span></a>
             </li>
         </ul>
     </div>

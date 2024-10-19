@@ -15,7 +15,7 @@
         <ul class="navigation navigation-main" id="main-menu-navigation" data-menu="menu-navigation">
 
             <li class="nav-item"><a
-                    href="{{route('admin.applications.index')}}" class="if-pb-0"><i class="feather icon-list"></i><span class="menu-title">Заявки</span></a>
+                    href="{{route('lawyer.applications.index')}}" class="if-pb-0"><i class="feather icon-list"></i><span class="menu-title">Заявки</span></a>
             </li>
             <li class="nav-item"><a
                     href="{{route('lawyer.schedule.index')}}" class="if-pb-0"><i class="feather icon-list"></i><span class="menu-title">Расписание</span></a>

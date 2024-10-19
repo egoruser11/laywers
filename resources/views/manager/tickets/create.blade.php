@@ -1,9 +1,9 @@
 @extends('manager.layout.app')
 
 
-@section('title', 'Новая тема заявки')
+@section('title', 'Нове обращение в поддержку')
 
-@section('content-title', 'Новая тема заявки')
+@section('content-title', 'Новое обращение в поддержку')
 
 @section('content')
     <section id="basic-horizontal-layouts">
@@ -14,7 +14,7 @@
                     </div>
                     <div class="card-content">
                         <div class="card-body">
-                            <form method="post" action="{{route('manager.topics.store')}}" class="form form-horizontal"
+                            <form method="post" action="{{route('manager.tickets.store')}}" class="form form-horizontal"
                                   id="profileForm">
                                 @csrf
                                 <div class="form-body">
@@ -22,23 +22,38 @@
                                         <div class="col-12">
                                             <div class="form-group row">
                                                 <div class="col-md-4">
-                                                    <span>Новая тема</span>
+                                                    <span>Ваше сообщение
+                                                        </span>
                                                 </div>
                                                 <div class="col-md-8">
-                                                    <input type="text" id="profileSurname" value="" autocomplete="off"
-                                                           class="form-control" name="name" placeholder="">
+                                                    <input type="text" id="profileMiddleName" value=""
+                                                           autocomplete="off" class="form-control" name="description"
+                                                           placeholder="">
                                                 </div>
                                             </div>
                                         </div>
-                                    <div class="col-md-8 offset-md-4">
-                                        <button type="submit" class="btn btn-primary mr-1 mb-1" id="profileBtn">
-                                            Сохранить
-                                        </button>
+                                        <div class="col-12">
+                                            <div class="form-group row">
+                                                <div class="col-md-4">
+                                                    <span>Тема</span>
+                                                </div>
+                                                <div class="col-md-8">
+                                                    <select class="form-control filter-select" autocomplete="off"
+                                                            name="topic" style="width: 100%;">
+                                                        @foreach($topics as $key => $topic)
+                                                            <option value="{{$key}}" > {{ $topic }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-8 offset-md-4">
+                                            <button type="submit" class="btn btn-primary mr-1 mb-1" id="profileBtn">
+                                                Сохранить
+                                            </button>
+                                        </div>
                                     </div>
-                                </div>
                             </form>
-
-
                         </div>
                     </div>
                 </div>

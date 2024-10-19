@@ -33,6 +33,9 @@
             <li class="nav-item"><a
                     href="{{route('admin.profile.index')}}" class="if-pb-0"><i class="feather icon-user"></i><span class="menu-title">Ваш профиль</span></a>
             </li>
+            <li class="nav-item"><a
+                    href="{{route('admin.tickets.index')}}" class="if-pb-0"><i class="feather icon-user"></i><span class="menu-title">Помощь</span></a>
+            </li>
         </ul>
     </div>
 </div>
