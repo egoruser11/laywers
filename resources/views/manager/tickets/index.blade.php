@@ -28,7 +28,7 @@
                     <td>{{$ticket->description}}</td>
                     <td>{{$ticket->messages_count}}@if($ticket->unread_messages_count) <span class="text-danger">( + {{$ticket->unread_messages_count}})</span>@endif</td>
                     <td><a href="{{route('manager.tickets.edit',$ticket->id)}}"
-                           class="btn btn-outline-dark waves-effect">Открыть чат обращения</a></td>
+                           class="btn btn-outline-dark waves-effect">Открыть чат обращения </a></td>
                 </tr>
             @endforeach
             </tbody>

@@ -13,7 +13,7 @@ class TicketController extends Controller
     public function index(Request $request)
     {
         $tickets = Ticket::withCount('messages')->withCount('unreadMessages')
-            ->where('user_id', Auth::id())->having('messages_count','>',1)->get();
+            ->where('user_id', Auth::id())->get();//->having('messages_count','>',1)->get()
         return view('manager.tickets.index', compact('tickets'));
     }
 

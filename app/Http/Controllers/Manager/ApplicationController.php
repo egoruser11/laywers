@@ -22,7 +22,7 @@ class ApplicationController extends Controller
     private ApplicationUpdate $applicationUpdate;
     private ApplicationDateAlgoService $applicationDateAlgoService;
 
-    public function __construct(ApplicationService $applicationService, ApplicationDateAlgoService $applicationDateAlgoService,ApplicationUpdate $applicationUpdate)
+    public function __construct(ApplicationService $applicationService, ApplicationDateAlgoService $applicationDateAlgoService, ApplicationUpdate $applicationUpdate)
     {
         $this->applicationService = $applicationService;
         $this->applicationDateAlgoService = $applicationDateAlgoService;
@@ -54,21 +54,20 @@ class ApplicationController extends Controller
         }
 
         $applications = $applications->orderBy('id', 'desc')->paginate();
-
         $filter = [
             'search' => $request->search,
             'status' => $request->status,
             'topic' => $request->topic,
         ];
-
-
         return view('manager.applications.index',
             compact('applications', 'statuses', 'topics', 'filter'));
     }
 
-    public function edit($id)
+    public function edit(int $id)
     {
-
+        $application = Application::findOrFail($id);
+//        abort_if(!$application,404,'Заявка не найдена или доступ запрещен');
+        abort_if($application->canNotManager(), 403, 'Заявка не найдена или доступ запрещен');
         $statuses = Application::getStatuses();
         $types = Application::getTypes();
         $topics = Topic::orderBy('name')->get();
@@ -77,21 +76,18 @@ class ApplicationController extends Controller
         $courts = Court::orderBy('id')->pluck('name')->toArray();
         $client_id = Application::where('id', $id)->value('client_id');
         $client = Client::where('id', $client_id);
-        $application = Application::find($id);
-
-        if ($application) {
-            return view('manager.applications.edit', compact('application', 'topics', 'statuses',
-                'lawyers', 'managers', 'courts', 'types', 'client'));
-        }
-
-        return redirect()->route('manager.applications.index')->with('message', 'Заявка не найдена');
+        return view('manager.applications.edit', compact('application', 'topics', 'statuses',
+            'lawyers', 'managers', 'courts', 'types', 'client'));
     }
 
-    public function update($id, Request $request)
+    public function update(int $id, Request $request)
     {
-       $this->applicationUpdate->update($id,$request->except('_token',));
+        $application = Application::find($id);
+        if ($application->canManager()) {
+            return redirect()->route('manager.applications.index')->with('message', 'Заявка не найдена или доступ запрещен');
+        }
+        $this->applicationUpdate->update($id, $request->except('_token'));
         return redirect()->route('manager.applications.edit', [$id])->with('message', 'Заявка обновлена');
-
     }
 
     public function destroy($id)

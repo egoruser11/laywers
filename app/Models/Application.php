@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Auth;
 use Laravel\Sanctum\HasApiTokens;
 
 /**
@@ -71,7 +72,7 @@ use Laravel\Sanctum\HasApiTokens;
  */
 class Application extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable,SoftDeletes;
+    use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 
     public const STATUS_NEW = 'new';
     public const STATUS_UNDER_CONSIDERATION = 'under_consideration';
@@ -127,6 +128,11 @@ class Application extends Authenticatable
         ];
     }
 
+    public function canNotManager()
+    {
+        return $this->manager_id != Auth::id() && $this->manager_id;
+    }
+
     public function getStatusNameAttribute()
     {
         return Application::getStatuses()[$this->status];
@@ -144,18 +150,22 @@ class Application extends Authenticatable
         }
         return Carbon::parse($this->start_at)->translatedFormat('d F y, H:i');
     }
+
     public function getEndWorkDateAttribute()
     {
         return Carbon::parse($this->work_start_date_and_time)->addHours($this->count_hours_work);
     }
+
     public function getDateMonthAttribute()
     {
         return Carbon::parse($this->work_start_date_and_time)->day;
     }
+
     public function getStartWorkDateStrAttribute()
     {
         return (Carbon::parse($this->work_start_date_and_time))->format('H:i');
     }
+
     public function getEndWorkDateStrAttribute()
     {
         return (Carbon::parse($this->work_start_date_and_time)->addHours($this->count_hours_work))->format('H:i');
@@ -181,8 +191,6 @@ class Application extends Authenticatable
     {
         return $this->belongsTo(Client::class);
     }
-
-
 
 
 }
