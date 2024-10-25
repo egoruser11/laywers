@@ -10,6 +10,7 @@ use App\Models\Client;
 use App\Models\Court;
 use App\Models\Topic;
 use App\Models\User;
+use App\Services\Admin\ApplicationFilterService;
 use App\Services\Manager\ApplicationDateAlgoService;
 use App\Services\Manager\ApplicationService;
 use App\Services\Manager\ApplicationUpdate;
@@ -23,52 +24,30 @@ class ApplicationController extends Controller
     private ApplicationService $applicationService;
     private ApplicationUpdate $applicationUpdate;
     private ApplicationDateAlgoService $applicationDateAlgoService;
+    private ApplicationFilterService $applicationFilterService;
 
-    public function __construct(ApplicationService $applicationService, ApplicationDateAlgoService $applicationDateAlgoService, ApplicationUpdate $applicationUpdate)
+    public function __construct(ApplicationService $applicationService, ApplicationDateAlgoService $applicationDateAlgoService
+        , ApplicationUpdate $applicationUpdate, ApplicationFilterService $applicationFilterService)
     {
         $this->applicationService = $applicationService;
         $this->applicationDateAlgoService = $applicationDateAlgoService;
         $this->applicationUpdate = $applicationUpdate;
+        $this->applicationFilterService = $applicationFilterService;
     }
 
     public function index(Request $request)
     {
-
         $applications = Application::query()->with('manager', 'topic', 'client')->withTrashed();
         $statuses = Application::getStatuses();
         $topics = Topic::orderBy('name')->get();
-
-        if (!empty($request->search)) {
-            $search = '%' . strtolower(trim($request->search)) . '%';
-            $applications->where(function ($query) use ($search) {
-                $query->where('phone', 'like', $search)->orWhere('name', 'like', $search);
-            });
-        }
-
-        if (!empty($request->status)) {
-            $applications->where('status', $request->status);
-        }
-
-        if (!empty($request->topic)) {
-            $applications->where('topic_id', $request->topic);
-        }
-
+        $filter = $this->applicationFilterService->filter($request,$applications);
         $applications = $applications->orderBy('id', 'desc')->paginate();
-
-        $filter = [
-            'search' => $request->search,
-            'status' => $request->status,
-            'topic' => $request->topic,
-        ];
-
-
         return view('admin.applications.index',
             compact('applications', 'statuses', 'topics', 'filter'));
     }
 
-    public function edit($id)
+    public function edit(int $id)
     {
-
         $statuses = Application::getStatuses();
         $types = Application::getTypes();
         $topics = Topic::orderBy('name')->get();
@@ -78,7 +57,6 @@ class ApplicationController extends Controller
         $client_id = Application::where('id', $id)->value('client_id');
         $client = Client::where('id', $client_id);
         $application = Application::find($id);
-
         if ($application) {
             return view('admin.applications.edit', compact('application', 'topics', 'statuses',
                 'lawyers', 'managers', 'courts', 'types', 'client'));
@@ -87,21 +65,19 @@ class ApplicationController extends Controller
         return redirect()->route('admin.applications.index')->with('message', 'Заявка не найдена');
     }
 
-    public function update($id, Request $request)
+    public function update(int $id, Request $request)
     {
         $this->applicationUpdate->update($id, $request->except('_token'));
         return redirect()->route('admin.applications.edit', [$id])->with('message', 'Заявка обновлена');
-
     }
 
-    public function destroy($id)
+    public function destroy(int $id)
     {
         if (Application::where('id',$id)->exists()) {
             Application::where('id', $id)->delete();
             return redirect()->route('admin.applications.index')->with('message', 'Заявка была удалена');
         }
         return redirect()->route('admin.applications.index')->with('message', 'Такой заявки не существует');
-
     }
 
     public function forceDestroy(int $id)
@@ -111,7 +87,6 @@ class ApplicationController extends Controller
             return redirect()->route('admin.applications.index')->with('message', 'Заявка была удалена польностью');
         }
         return redirect()->route('admin.applications.index')->with('message', 'Такой заявки не существует');
-
     }
     public function restore(int $id)
     {
@@ -120,7 +95,6 @@ class ApplicationController extends Controller
             return redirect()->route('admin.applications.index')->with('message', 'Заявка была восстановлена');
         }
         return redirect()->route('admin.applications.index')->with('message', 'Такой заявки не существует');
-
     }
 
 
@@ -132,9 +106,7 @@ class ApplicationController extends Controller
         $courts = Court::orderBy('id')->pluck('name')->toArray();
         $topics = Topic::orderBy('name')->get();
         $types = Application::getTypes();
-
         return view('admin.applications.create', compact('topics', 'types', 'courts', 'managers', 'lawyers', 'clients'));
-
     }
 
 
@@ -145,11 +117,8 @@ class ApplicationController extends Controller
             return redirect()->route('admin.applications.index')->with('message', 'Заявка успешно добавлена');
         }
         $this->applicationDateAlgoService->run($request->except('_token'));
-
         return redirect()->route('admin.applications.index')->with('message', 'Заявка успешно добавлена');
-
     }
-
 
 }
 

@@ -6,80 +6,58 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Users\StoreRequest;
 use App\Models\Application;
 use App\Models\User;
+use App\Services\Admin\ProfileUpdatePasswordService;
+use App\Services\Admin\UserCreateService;
+use App\Services\Admin\UserFilterService;
+use App\Services\Admin\UserUpdatePasswordService;
+use App\Services\Admin\UserUpdateService;
 use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
+
+    private UserFilterService $userFilterService;
+    private UserCreateService $userCreateService;
+    private UserUpdateService $userUpdateService;
+    private UserUpdatePasswordService $userUpdatePasswordService;
+
+
+    public function __construct(UserFilterService         $userFilterService, UserCreateService $userCreateService,
+                                UserUpdatePasswordService $userUpdatePasswordService, UserUpdateService $userUpdateService,)
+    {
+        $this->userFilterService = $userFilterService;
+        $this->userCreateService = $userCreateService;
+        $this->userUpdateService = $userUpdateService;
+        $this->userUpdatePasswordService = $userUpdatePasswordService;
+    }
+
     public function index(Request $request)
     {
-
         $statuses = User::getStatusesOfAccount();
         $roles = User::getRoles();
-        $users = User::query()->withTrashed();
-
         $filter = [
             'search' => $request->search,
             'status' => $request->status,
             'role' => $request->role,
             'sort' => $request->sort,
         ];
-
-        if (!empty($request->search)) {
-            $search = '%' . strtolower(trim($request->search)) . '%';
-            $users->where(function ($query) use ($search) {
-                $query->where('name', 'like', $search)->orWhere('login', 'like', $search);
-            });
-        }
-
-        if (!empty($request->status)) {
-            $users->where('account', $request->status);
-        }
-
-        if (!empty($request->role)) {
-            $users->where('role', $request->role);
-        }
-        if (!empty($request->sort)) {
-            if ($request->sort == 'account') {
-                $users->orderBy('account');
-            } elseif ($request->sort == 'date') {
-                $users->orderBy('start_at');
-            }
-        }
-
-        $users = $users->orderBy('id', 'desc')->paginate();
-
-
+        $users = $this->userFilterService->filter($request);
         return view('admin.users.index', compact('users', 'statuses', 'roles', 'filter'));
     }
 
     public function create()
     {
         $users = User::all();
-
         $statuses = User::getStatusesOfAccount();
-
         $roles = User::getRoles();
-
         return view('admin.users.create', compact('users', 'statuses', 'roles'));
 
     }
 
     public function store(StoreRequest $request)
     {
-        User::create(
-
-            [
-                'account' => $request->status,
-                'login' => $request->login,
-                'name' => $request->name,
-                'password' => bcrypt($request->password),
-                'role' => $request->role,
-                'start_at' => now(),
-            ]
-
-        );
+        $this->userCreateService->create($request);
         return redirect()->route('admin.users.index')->with('message', 'Пользователь успешно добавлен');
-
     }
 
     public function edit($id)
@@ -97,17 +75,7 @@ class UserController extends Controller
 
     public function update($id, Request $request)
     {
-        User::where('id', $id)->update(
-
-            [
-                'account' => $request->status,
-                'login' => $request->login,
-                'name' => $request->name,
-                'role' => $request->role,
-                'start_at' => now(),
-            ]
-
-        );
+        $this->userUpdateService->update($request->except('_token'), $id);
         return redirect()->route('admin.users.edit', [$id])->with('message', 'Пользователь обновлен');
 
     }
@@ -121,18 +89,20 @@ class UserController extends Controller
         return redirect()->route('admin.users.index')->with('message', 'Такой пользователь не найден');
 
     }
+
     public function forceDestroy(int $id)
     {
-        if (User::where('id',$id)->withTrashed()->exists()) {
+        if (User::where('id', $id)->withTrashed()->exists()) {
             User::where('id', $id)->forceDelete();
             return redirect()->route('admin.users.index')->with('message', 'Заявка была удалена польностью');
         }
         return redirect()->route('admin.users.index')->with('message', 'Такой заявки не существует');
 
     }
+
     public function restore(int $id)
     {
-        if (User::where('id',$id)->withTrashed()->exists()) {
+        if (User::where('id', $id)->withTrashed()->exists()) {
             User::where('id', $id)->restore();
             return redirect()->route('admin.users.index')->with('message', 'Заявка была восстановлена');
         }
@@ -142,16 +112,8 @@ class UserController extends Controller
 
     public function updatePassword($id, Request $request)
     {
-        if ($request->password != $request->password_confirmation) {
-            return redirect()->route('admin.users.edit',$id)->with('error_message', 'Пароли разнятся');
-        }
-        User::where('id', $id)->update(
-            [
-                'password' => bcrypt($request->password),
-            ]
-        );
+        $this->userUpdatePasswordService->updatePassword($request, $id);
         return redirect()->route('admin.users.edit', [$id])->with('message', 'Пароль обновлен');
-
     }
 
 }

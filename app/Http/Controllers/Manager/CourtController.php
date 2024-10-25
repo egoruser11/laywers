@@ -11,23 +11,18 @@ class CourtController extends Controller
 {
     public function index()
     {
-
         $courts = Court::orderBy('name')->get();
-
         return view('manager.courts.index', compact('courts'));
     }
 
     public function edit($id)
     {
-
         $court = Court::find($id);
-
         if ($court) {
             return view('manager.courts.edit', compact('court',));
         }
 
         return redirect()->route('manager.courts.index')->with('message', 'Суд не найден');
-
     }
 
     public function update($id, Request $request)
@@ -38,7 +33,6 @@ class CourtController extends Controller
             ]
         );
         return redirect()->route('manager.courts.index')->with('message', 'Суд обновлен');
-
     }
 
     public function destroy($id)

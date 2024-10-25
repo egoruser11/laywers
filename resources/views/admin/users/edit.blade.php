@@ -47,7 +47,7 @@
                                                 </div>
                                                 <div class="col-sm-6 col-md-3">
                                                     <select class="form-control filter-select" autocomplete="off"
-                                                            name="status" style="width: 100%;">
+                                                            name="account" style="width: 100%;">
                                                         @foreach($statuses as $key => $statusName)
                                                             <option value="{{ $key  }}"
                                                                     @if($user->account == $key)selected @endif> {{ $statusName}}</option>

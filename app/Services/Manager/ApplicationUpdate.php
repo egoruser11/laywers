@@ -9,7 +9,6 @@ class ApplicationUpdate
     public function update(int $id,array $data)
     {
         $data['start_at'] = now();
-        $d = Application::where('id',$id)->update($data);
-        return $d;
+        return Application::where('id',$id)->update($data);
     }
 }

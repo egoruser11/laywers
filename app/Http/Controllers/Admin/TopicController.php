@@ -14,7 +14,6 @@ class TopicController extends Controller
     public function index(Request $request)
     {
         $topics = Topic::orderBy('id')->get();
-
         return view('admin.topics.index', compact('topics'));
     }
 
@@ -47,19 +46,15 @@ class TopicController extends Controller
         if ($topic) {
             return view('admin.topics.edit', compact('topic',));
         }
-
         return redirect()->route('admin.topics.index')->with('message', 'Тема не найдена');
-
     }
 
     public function update($id, Request $request)
     {
         Topic::where('id', $id)->update(
-
             [
                 'name' => $request->name,
             ]
-
         );
         return redirect()->route('admin.topics.index')->with('message', 'Тема обновлена');
 

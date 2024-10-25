@@ -29,13 +29,6 @@ class TicketController extends Controller
             ]
 
         );
-//        $ticket->messages()->create(
-//            [
-//                'message' => $request->message,
-//                'user_id' => Auth::id(),
-//                'recipient_id' => $request->recipient_id,
-//            ]
-//        );
         return redirect()->route('admin.tickets.index')->with('message', 'Новое обращение создано');
 
     }
